@@ -4,7 +4,7 @@ import axios from "axios";
 import Link from "next/link";
 import { toast } from "react-hot-toast";
 import { useRouter } from "next/navigation";
-
+import Navbar from "@/components/navbar";
 
 export default function HomePage() {
   const router = useRouter();
@@ -23,7 +23,7 @@ export default function HomePage() {
 
   const logoutHandler = async () => {
     try {
-      await axios.get("/api/users/logout");
+      await axios.get("/api/users/logout", );
       toast.success("Logged out successfully");
       router.push("/login");
     } catch (error) {
@@ -33,7 +33,8 @@ export default function HomePage() {
 
   return (
     <>
-      
+      <Navbar logout={logoutHandler} />
     </>
   );
+
 }
