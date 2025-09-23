@@ -3,6 +3,7 @@ import User from "@/modals/userModal";
 import { NextRequest, NextResponse } from "next/server";
 import bcryptjs from "bcryptjs";
 import jwt from "jsonwebtoken";
+import Post from "@/modals/postModal";
 
 connect();
 
@@ -29,6 +30,29 @@ export async function POST(req = NextRequest) {
       );
     }
 
+    const tokenData = {
+      id: user._id,
+      // username: user.username,
+      // email: user.email,
+    };
+
+    const token = await jwt.sign(tokenData, process.env.TOKEN_SECRET, {
+      expiresIn: "1d",
+    });
+
+    const populatedPosts =
+      user.posts && Array.isArray(user.posts)
+        ? await Promise.all(
+            user.posts.map(async (postId) => {
+              const post = await Post.findById(postId);
+              if (post && post.author.equals(user._id)) {
+                return post;
+              }
+              return null;
+            })
+          )
+        : [];
+
     user = {
       _id: user._id,
       username: user.username,
@@ -37,18 +61,8 @@ export async function POST(req = NextRequest) {
       bio: user.bio,
       followers: user.followers,
       followings: user.followings,
-      posts: user.posts,
+      posts: populatedPosts,
     };
-
-    const tokenData = {
-      id: user._id,
-      username: user.username,
-      email: user.email,
-    };
-
-    const token = await jwt.sign(tokenData, process.env.TOKEN_SECRET, {
-      expiresIn: "1d",
-    });
 
     const response = NextResponse.json(
       { message: "Login successful", success: true, user },
