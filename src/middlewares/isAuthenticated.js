@@ -1,8 +1,7 @@
 import jwt, { decode } from "jsonwebtoken";
-import next from "next";
 import { NextResponse, NextRequest } from "next/server";
 
-export default async function isAuthenticated(req = NextRequest) {
+export default async function isAuthenticated(req) {
   try {
     const token = req.cookies.get("token")?.value;
     if (!token) {

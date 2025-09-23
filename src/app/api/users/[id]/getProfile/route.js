@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 import isAuthenticated from "@/middlewares/isAuthenticated";
 connect();
 
-export async function GET(req = NextRequest, { params }) {
+export async function GET(req, { params }) {
   try {
     const authResponse = await isAuthenticated(req);
     if (authResponse instanceof NextResponse) return authResponse; // Only return if it's an error

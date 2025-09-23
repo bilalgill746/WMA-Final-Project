@@ -1,18 +1,15 @@
 import { connect } from "@/utils/dbConfig";
 import User from "@/modals/userModal";
 import { NextRequest, NextResponse } from "next/server";
-import jwt from "jsonwebtoken";
+import isAuthenticated from "@/middlewares/isAuthenticated";
 
 connect();
 
-export async function POST(req = NextRequest, { params }) {
+export async function POST(req, { params }) {
   try {
-    const token = req.cookies.get("token")?.value;
-    if (!token) {
-      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-    }
-    const decoded = jwt.verify(token, process.env.TOKEN_SECRET);
-    const userId = decoded.id;
+    const authResponse = await isAuthenticated(req);
+    if (authResponse instanceof NextResponse) return authResponse;
+    const userId = authResponse;
     const targetUserId = params.id;
     const followUserId = userId; // The authenticated user
     if (followUserId === targetUserId) {

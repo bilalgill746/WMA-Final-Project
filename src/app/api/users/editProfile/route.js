@@ -14,12 +14,7 @@ export async function POST(req) {
   try {
     const authResponse = await isAuthenticated(req);
     if (authResponse instanceof NextResponse) return authResponse;
-    const token = req.cookies.get("token")?.value;
-    if (!token) {
-      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-    }
-    const decoded = jwt.verify(token, process.env.TOKEN_SECRET);
-    const userId = decoded.id;
+    const userId = authResponse;
 
     const formData = await req.formData();
     const bio = formData.get("bio");

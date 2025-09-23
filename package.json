@@ -30,6 +30,7 @@
     "react-dom": "19.1.0",
     "react-hook-form": "^7.63.0",
     "react-hot-toast": "^2.6.0",
+    "sharp": "^0.34.4",
     "zustand": "^5.0.8"
   },
   "devDependencies": {
