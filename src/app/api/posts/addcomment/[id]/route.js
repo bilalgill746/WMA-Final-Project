@@ -3,7 +3,6 @@ import { NextRequest, NextResponse } from "next/server";
 import Post from "@/modals/postModal";
 import isAuthenticated from "@/middlewares/isAuthenticated";
 import Comment from "@/modals/commentModal";
-import User from "@/modals/userModal";
 
 connect();
 
@@ -39,7 +38,7 @@ export async function POST(req, { params }) {
     await post.save();
 
     return NextResponse.json(
-      { message: "Comment added successfully", comment },
+      { message: "Comment added successfully", comment, success: true },
       { status: 201 }
     );
   } catch (error) {

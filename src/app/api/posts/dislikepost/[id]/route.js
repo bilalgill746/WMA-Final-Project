@@ -19,7 +19,7 @@ export async function GET(req, { params }) {
     await post.save();
 
     return NextResponse.json(
-      { message: "Post disliked successfully" },
+      { message: "Post disliked successfully", success: true },
       { status: 200 }
     );
   } catch (error) {

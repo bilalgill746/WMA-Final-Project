@@ -27,7 +27,7 @@ export async function DELETE(req, { params }) {
     await Comment.deleteMany({ post: postId });
 
     return NextResponse.json(
-      { message: "Post deleted successfully" },
+      { message: "Post deleted successfully", success: true },
       { status: 200 }
     );
   } catch (error) {

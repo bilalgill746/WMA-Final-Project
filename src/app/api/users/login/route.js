@@ -60,7 +60,7 @@ export async function POST(req = NextRequest) {
       avatar: user.avatar,
       bio: user.bio,
       followers: user.followers,
-      followings: user.followings,
+      following: user.following,
       posts: populatedPosts,
     };
 

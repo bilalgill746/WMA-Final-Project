@@ -15,20 +15,15 @@ export async function POST(req) {
     const reqBody = await req.formData();
     const title = reqBody.get("title");
     const content = reqBody.get("content");
-    const image = reqBody.get("image");
-    if (!title || !content) {
+    const images = reqBody.getAll("image");
+    if (images.length !== 1) {
       return NextResponse.json(
-        { message: "Title and content are required" },
+        { message: "Exactly one image is required" },
         { status: 400 }
       );
     }
+    const image = images[0];
 
-    if (!image) {
-      return NextResponse.json(
-        { message: "Image is required" },
-        { status: 400 }
-      );
-    }
     const imageBuffer = Buffer.from(await image.arrayBuffer());
     const optimizedImageBuffer = await sharp(imageBuffer)
       .resize({ width: 800, height: 800, fit: "inside" })

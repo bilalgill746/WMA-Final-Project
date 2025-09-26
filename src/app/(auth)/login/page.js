@@ -2,9 +2,11 @@
 import Link from "next/link";
 import React, { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import toast from "react-hot-toast";
+import { toast } from "sonner";
 import axios from "axios";
 import { Button } from "@/components/ui/button";
+import { useDispatch } from "react-redux";
+import { setAuthUser } from "@/redux/slices/authSlice";
 export default function LoginPage() {
   const router = useRouter();
   const [user, setUser] = React.useState({
@@ -13,16 +15,18 @@ export default function LoginPage() {
   });
   const [buttonDisabled, setButtonDisabled] = React.useState(false);
   const [loading, setLoading] = React.useState(false);
+  const dispatch = useDispatch();
   const onLogin = async () => {
     try {
       setLoading(true);
       const response = await axios.post("/api/users/login", user);
       console.log("Login success", response.data);
+      dispatch(setAuthUser(response.data.user));
       router.push("/home");
-      toast.success(response.data.message);
+      toast(response.data.message);
     } catch (error) {
       console.log("Login failed", error.message);
-      toast.error(error.message);
+      toast(error.message);
     }
   };
 

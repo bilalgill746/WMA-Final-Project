@@ -16,7 +16,7 @@ export async function GET(req) {
         sort: { createdAt: -1 },
         populate: { path: "author", select: "username , avatar" },
       });
-    return NextResponse.json({ posts }, { status: 200 });
+    return NextResponse.json({ posts, success: true }, { status: 200 });
   } catch (error) {
     return NextResponse.json({ message: error.message }, { status: 500 });
   }

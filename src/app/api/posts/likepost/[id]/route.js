@@ -20,7 +20,7 @@ export async function GET(req, { params }) {
     await post.save();
 
     return NextResponse.json(
-      { message: "Post liked successfully" },
+      { message: "Post liked successfully", success: true },
       { status: 200 }
     );
   } catch (error) {
