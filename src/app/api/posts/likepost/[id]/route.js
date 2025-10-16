@@ -2,6 +2,8 @@ import { connect } from "@/utils/dbConfig";
 import { NextRequest, NextResponse } from "next/server";
 import Post from "@/modals/postModal";
 import isAuthenticated from "@/middlewares/isAuthenticated";
+import User from "@/modals/userModal";
+// import { getRecieverSocketId, io } from "../../../../../../server";
 connect();
 
 export async function GET(req, { params }) {
@@ -9,8 +11,9 @@ export async function GET(req, { params }) {
     const authResponse = await isAuthenticated(req);
     if (authResponse instanceof NextResponse) return authResponse;
     const userId = authResponse;
-
-    const postId = params.id;
+    const resolvedParams = await params;
+    const postId = resolvedParams.id;
+    // const postId = await params.id;
     const userWhoLikedId = userId;
     const post = await Post.findById(postId);
     if (!post) {
@@ -18,6 +21,20 @@ export async function GET(req, { params }) {
     }
     await post.updateOne({ $addToSet: { likes: userWhoLikedId } });
     await post.save();
+
+    // const user = await User.findById(userWhoLikedId).select("username avatar");
+    // const postOwnerId = post.author.toString();
+    // if (postOwnerId !== userWhoLikedId) {
+    //   const notification = {
+    //     type: "like",
+    //     userId: userWhoLikedId,
+    //     userDetails: user,
+    //     postId,
+    //     message: "Your post was liked",
+    //   };
+    //   const postOwnerSocketId = getRecieverSocketId(postOwnerId);
+    //   io.to(postOwnerSocketId).emit("notification", notification);
+    // }
 
     return NextResponse.json(
       { message: "Post liked successfully", success: true },

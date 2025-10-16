@@ -1,12 +1,28 @@
-import React, { useState } from "react";
+"use client";
+import React, { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "./dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "./avatar";
 import Link from "next/link";
 import { MoreHorizontal } from "lucide-react";
 import { Button } from "./button";
+import { useDispatch, useSelector } from "react-redux";
+import Comment from "./Comment";
+import axios from "axios";
+import { toast } from "sonner";
+import { setPosts } from "@/redux/slices/postSlice";
 
 function CommentDialog({ open, setOpen }) {
   const [text, setText] = useState("");
+  const { selectedPost, posts } = useSelector((makeStore) => makeStore.post);
+  const dispatch = useDispatch();
+  const [comment, setComment] = useState([]);
+
+  useEffect(() => {
+    if (selectedPost) {
+      setComment(selectedPost.comments);
+    }
+  }, [selectedPost]);
+
   const changeEventHandler = (e) => {
     const inputText = e.target.value;
     if (inputText.trim()) {
@@ -16,7 +32,32 @@ function CommentDialog({ open, setOpen }) {
     }
   };
   const sendMessageHandler = async () => {
-    alert(text);
+    try {
+      const res = await axios.post(
+        `api/posts/addcomment/${selectedPost._id}`,
+        { text },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+          withCredentials: true,
+        }
+      );
+      if (res.data.success) {
+        const updatedCommentData = [...comment, res.data.comment];
+        setComment(updatedCommentData);
+        const updatedPostData = posts.map((p) =>
+          p._id === selectedPost._id
+            ? { ...p, comments: updatedCommentData }
+            : p
+        );
+        dispatch(setPosts(updatedPostData));
+        toast.success(res.data.message);
+        setText("");
+      }
+    } catch (error) {
+      toast.error(error.response.data.message);
+    }
   };
   return (
     <Dialog open={open}>
@@ -28,7 +69,7 @@ function CommentDialog({ open, setOpen }) {
         <div className="flex flex-1">
           <div className="w-1/2">
             <img
-              src="https://images.unsplash.com/photo-1758640920659-0bb864175983?q=80&w=1171&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+              src={selectedPost?.image}
               alt="post_img"
               className="w-full h-full object-cover rounded-l-lg"
             />
@@ -38,13 +79,13 @@ function CommentDialog({ open, setOpen }) {
               <div className="flex gap-3 items-center">
                 <Link href={""}>
                   <Avatar>
-                    <AvatarImage src="" />
+                    <AvatarImage src={selectedPost?.author?.avatar} />
                     <AvatarFallback>CN</AvatarFallback>
                   </Avatar>
                 </Link>
                 <div>
                   <Link href={""} className="font-semibold text-xs">
-                    username
+                    {selectedPost?.author?.username}
                   </Link>
                   {/* <span className="text-gray-600 text-sm">Bio here...</span> */}
                 </div>
@@ -68,7 +109,12 @@ function CommentDialog({ open, setOpen }) {
             </div>
             <hr />
             <div className="flex-1 overflow-y-auto max-h-96 p-4">
-              comments will come
+              {comment.map((comment, index) => (
+                <Comment
+                  key={comment._id || `comment-${index}`}
+                  comment={comment}
+                />
+              ))}
             </div>
             <div className="p-4">
               <div className="flex items-center gap-2">
@@ -77,7 +123,7 @@ function CommentDialog({ open, setOpen }) {
                   onChange={changeEventHandler}
                   value={text}
                   placeholder="Add a comment..."
-                  className="w-full outline border-gray-300 p-2 rounded "
+                  className="w-full outline border-gray-300 p-2 rounded text-sm"
                 />
                 <Button
                   disabled={!text.trim()}

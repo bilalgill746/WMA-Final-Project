@@ -10,7 +10,9 @@ export async function POST(req, { params }) {
   try {
     const userId = await isAuthenticated(req);
     if (userId instanceof NextResponse) return userId;
-    const postId = params.id;
+    const resolvedParams = await params;
+    const postId = resolvedParams.id;
+    // const postId = params.id;
     const userWhoCommentedId = userId;
     const { text } = await req.json();
     if (!text) {
@@ -31,7 +33,7 @@ export async function POST(req, { params }) {
 
     await comment.populate({
       path: "author",
-      select: "username, avatar",
+      select: "username avatar",
     });
 
     post.comments.push(comment._id);

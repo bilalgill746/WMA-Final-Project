@@ -8,7 +8,9 @@ connect();
 
 export async function DELETE(req, { params }) {
   try {
-    const postId = params.id;
+    const resolvedParams = await params;
+    const postId = resolvedParams.id;
+    // const postId = params.id;
     const userId = await isAuthenticated(req);
     if (userId instanceof NextResponse) return userId;
     const authorId = userId;

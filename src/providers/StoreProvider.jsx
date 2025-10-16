@@ -11,7 +11,6 @@ export default function StoreProvider({ children }) {
   useEffect(() => {
     setIsClient(true);
   }, []);
-
   if (!storeRef.current) {
     storeRef.current = makeStore();
     persistorRef.current = persistor(storeRef.current);

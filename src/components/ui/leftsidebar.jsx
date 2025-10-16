@@ -10,6 +10,7 @@ import { useSelector } from "react-redux";
 import { useDispatch } from "react-redux";
 import { setAuthUser } from "@/redux/slices/authSlice";
 import CreatePost from "./CreatePost";
+import { setPosts, setSelectedPost } from "@/redux/slices/postSlice";
 
 export default function LeftSideBar() {
   const router = useRouter();
@@ -20,6 +21,8 @@ export default function LeftSideBar() {
     try {
       await axios.get("/api/users/logout");
       dispatch(setAuthUser(null));
+      dispatch(setSelectedPost(null));
+      dispatch(setPosts([]));
       toast("Logged out successfully");
       router.push("/login");
     } catch (error) {
@@ -32,6 +35,12 @@ export default function LeftSideBar() {
       logoutHandler();
     } else if (textType === "Create") {
       setOpen(true);
+    } else if (textType === "Profile") {
+      router.push(`/profile/${user?._id}`);
+    } else if (textType === "Home") {
+      router.push("/home");
+    } else if (textType === "Messages") {
+      router.push("/chat");
     }
   };
 

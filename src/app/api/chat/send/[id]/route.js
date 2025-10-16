@@ -3,15 +3,21 @@ import { NextRequest, NextResponse } from "next/server";
 import isAuthenticated from "@/middlewares/isAuthenticated";
 import Conversation from "@/modals/conversationModal";
 import Message from "@/modals/messageModal";
+
+
 connect();
 export async function POST(req, { params }) {
   try {
     const userId = await isAuthenticated(req);
     if (userId instanceof NextResponse) return userId;
     const senderId = userId;
-    const recieverId = params.id;
+    const resolvedParams = await params;
+    const recieverId = resolvedParams.id;
+    // const recieverId = params.id;
     const reqBody = await req.json();
-    const { message } = reqBody;
+    const { textMessage: message } = reqBody;
+    console.log(message);
+
     let conversation = await Conversation.findOne({
       participants: { $all: [senderId, recieverId] },
     });

@@ -6,9 +6,11 @@ import User from "@/modals/userModal";
 
 connect();
 
-export async function POST(req, { params }) {
+export async function GET(req, { params }) {
   try {
-    const postId = params.id;
+    const resolvedParams = await params;
+    const postId = resolvedParams.id;
+    // const postId = params.id;
     const userId = await isAuthenticated(req);
     if (userId instanceof NextResponse) return userId;
     const authorId = userId;
@@ -27,14 +29,18 @@ export async function POST(req, { params }) {
       await user.updateOne({ $pull: { bookmarks: post._id } });
       await user.save();
       return NextResponse.json(
-        { message: "Post removed from bookmarks", type: "unsaved" },
+        {
+          message: "Post removed from bookmarks",
+          type: "unsaved",
+          success: true,
+        },
         { status: 200 }
       );
     } else {
       await user.updateOne({ $addToSet: { bookmarks: post._id } });
       await user.save();
       return NextResponse.json(
-        { message: "Post added to bookmarks", type: "saved" },
+        { message: "Post added to bookmarks", type: "saved", success: true },
         { status: 200 }
       );
     }

@@ -37,7 +37,7 @@ export async function POST(req) {
 
     await user.save();
     return NextResponse.json(
-      { message: "Profile updated successfully", user },
+      { message: "Profile updated successfully", user, success: true },
       { status: 200 }
     );
   } catch (error) {

@@ -4,6 +4,7 @@ import React, { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 export default function SignupPage() {
   const router = useRouter();
   const [user, setUser] = React.useState({
@@ -17,13 +18,12 @@ export default function SignupPage() {
     try {
       setLoading(true);
       const response = await axios.post("/api/users/signup", user);
-      console.log("Signup success", response.data);
-      const { hashedToken } = response.data;
-      router.push("/login");
+      // console.log("Signup success", response.data);
+      toast.success(response.data.message);
+      router.push("/verifyemail");
     } catch (error) {
-      console.log("signup failed", error.message);
-
-      // toast.error(error.message);
+      // console.log("signup failed", error.message);
+      toast.error(error.response.data.message);
     } finally {
       setLoading(false);
     }

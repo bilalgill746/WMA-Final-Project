@@ -5,13 +5,19 @@ import isAuthenticated from "@/middlewares/isAuthenticated";
 
 connect();
 
-export async function POST(req, { params }) {
+export async function GET(req, { params }) {
   try {
     const authResponse = await isAuthenticated(req);
     if (authResponse instanceof NextResponse) return authResponse;
     const userId = authResponse;
-    const targetUserId = params.id;
+    const resolvedParams = await params;
+    const targetUserId = resolvedParams.id;
+    // const targetUserId = await params.id;
     const followUserId = userId; // The authenticated user
+
+    console.log(targetUserId);
+    console.log(followUserId);
+
     if (followUserId === targetUserId) {
       return NextResponse.json(
         { message: "You cannot follow/unfollow yourself" },
@@ -38,7 +44,7 @@ export async function POST(req, { params }) {
         ),
       ]);
       return NextResponse.json(
-        { message: "unfollowed successfully" },
+        { message: "unfollowed successfully", success: true },
         { status: 200 }
       );
     } else {
@@ -53,7 +59,7 @@ export async function POST(req, { params }) {
         ),
       ]);
       return NextResponse.json(
-        { message: "followed successfully" },
+        { message: "followed successfully", success: true },
         { status: 200 }
       );
     }

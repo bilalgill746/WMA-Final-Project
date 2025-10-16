@@ -1,64 +1,105 @@
 "use client";
+import { Button } from "@/components/ui/button";
 import React, { useEffect } from "react";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 import axios from "axios";
-import { useRouter } from "next/router";
-import Link from "next/link";
-export default function VerifyEmailPage() {
-  // const router = useRouter();
-
-  const [token, setToken] = React.useState("");
-  const [verified, setVerified] = React.useState(false);
-  const [error, setError] = React.useState(false);
-
-  const verifyUserEmail = async () => {
+function Page() {
+  const router = useRouter();
+  const [user, setUser] = React.useState({
+    email: "",
+    code: "",
+  });
+  const [buttonDisabled, setButtonDisabled] = React.useState(false);
+  const [open, setOpen] = React.useState(false);
+  const [message, setMessage] = React.useState("");
+  const [isExpired, setIsExpired] = React.useState(false);
+  const onVerify = async () => {
     try {
-      await axios.post("/api/users/verifyemail", { token });
-      console.log("Email verified successfully", token);
-      
-      setVerified(true);
-      setError(false);
+      const response = await axios.post("/api/users/verifyemail", user);
+      setMessage(response.data.message);
+      setOpen(response.data.message === "Verification code expired");
+      toast.success(response.data.message);
+      router.push("/login");
     } catch (error) {
-      setError(true);
-      console.log(error.response.data);
+      setMessage(error.response.data.message);
+      toast.error(error.response.data.message);
     }
   };
-
-  useEffect(() => {
-    setError(false);
-    const urlParams = new URLSearchParams(window.location.search);
-    const urlToken = urlParams.get('token');
-    setToken(urlToken || "");
-
-    // const {query} = router;
-    // const urlTokenTwo = query.token;
-  }, []);
-
-  useEffect(() => {
-    setError(false);
-    if (token.length > 0) {
-      verifyUserEmail();
+  const resendCode = async () => {
+    try {
+      const response = await axios.post(
+        "/api/users/resendverificationcode",
+        user
+      );
+      setMessage(response.data.message);
+      toast.success(response.data.message);
+    } catch (error) {
+      setMessage(error.response.data.message);
+      toast.error(error.response.data.message);
     }
-  }, [token]);
+  };
+  useEffect(() => {
+    const isValid =
+      user.email.length > 0 &&
+      user.code.length > 0 &&
+      user.code.length < 7 &&
+      user.email.endsWith("@gmail.com");
 
+    if (isValid) {
+      setButtonDisabled(false);
+    } else {
+      setButtonDisabled(true);
+    }
+  }, [user]);
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsExpired(true);
+      setOpen(true);
+      setMessage("Verification code expired");
+      // Optionally disable verify button on expiration
+      setButtonDisabled(true);
+    }, 120000); // 2 minutes in milliseconds
+
+    return () => clearTimeout(timer); // Cleanup on unmount
+  }, []); // Empty dependency array: runs once on mount
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen  py-2">
-     <h1 className="text-4xl ">Verify Email</h1>
-     <h2 className="p-2 bg-amber-400 text-black">
-      {token ? `${token}` : "No token found"}
-     </h2>
-     {verified && (
-      <div>
-        <h2>Verified</h2>
-        <Link href="/login" className="text-blue-500 underline">
-          Login
-        </Link>
-      </div>
-     )}
-      {error && (
-      <div>
-        <h2>Error</h2>
-      </div>
-     )}
+    <div className="flex items-center w-screen h-screen justify-center">
+      <span className="shadow-lg flex flex-col gap-5 p-8">
+        <div className="my-4">
+          <h1 className="text-center font-bold text-2xl">VERIFY EMAIL</h1>
+          <p className="text-center">{message}</p>
+        </div>
+        <div className="flex flex-col">
+          <label htmlFor="email" className="font-medium">
+            Email
+          </label>
+          <input
+            className=" outline focus-visible:outline-black my-2"
+            type="email"
+            id="email"
+            value={user.email}
+            onChange={(e) => setUser({ ...user, email: e.target.value })}
+          />
+        </div>
+        <div className="flex flex-col">
+          <label className="font-medium">Verification Code</label>
+          <input
+            className=" outline focus-visible:outline-black my-2"
+            type="text"
+            id="code"
+            value={user.code}
+            onChange={(e) => setUser({ ...user, code: e.target.value })}
+          />
+          <p className="text-xs">Code will expire in 2 min.</p>
+        </div>
+        <Button onClick={onVerify} disabled={buttonDisabled ? true : false}>
+          Verify
+        </Button>
+        {open && <Button onClick={resendCode}>Resend Code</Button>}
+      </span>
     </div>
   );
 }
+
+export default Page;

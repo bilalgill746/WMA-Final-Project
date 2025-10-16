@@ -2,8 +2,8 @@ import { connect } from "@/utils/dbConfig";
 import User from "@/modals/userModal";
 import { NextRequest, NextResponse } from "next/server";
 import bcryptjs from "bcryptjs";
-
-
+import generateVerificationCode from "@/helpers/generateVerificationCode";
+import sendVerificationEmail from "@/helpers/sendVerificationEmail";
 connect();
 export async function POST(req = NextRequest) {
   try {
@@ -19,27 +19,28 @@ export async function POST(req = NextRequest) {
         { status: 400 }
       );
     }
-
     const salt = await bcryptjs.genSalt(10);
     const hashedPassword = await bcryptjs.hash(password, salt);
+
+    const verificationCode = generateVerificationCode();
+    const codeExpires = new Date(Date.now() + 2 * 60 * 1000);
 
     const newUser = new User({
       username,
       email,
       password: hashedPassword,
+      isVerified: false,
+      verificationCode: verificationCode,
+      verificationCodeExpires: codeExpires,
     });
 
     const savedUser = await newUser.save();
     console.log(savedUser);
 
-    // const { mailResponse, hashedToken, verificationCode } = await sendEmail({
-    //   email,
-    //   emailType: "VERIFY",
-    //   userId: savedUser._id,
-    // });
+    await sendVerificationEmail(email, verificationCode);
 
     return NextResponse.json({
-      message: "User registered successfully",
+      message: "Verification code sent",
       success: true,
       savedUser,
     });

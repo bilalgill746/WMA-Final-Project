@@ -10,7 +10,9 @@ export async function GET(req, { params }) {
     const userId = await isAuthenticated(req);
     if (userId instanceof NextResponse) return userId;
     const senderId = userId;
-    const recieverId = params.id;
+    const resolvedParams = await params;
+    const recieverId = resolvedParams.id;
+    // const recieverId = params.id;
     const conversation = await Conversation.findOne({
       participants: { $all: [senderId, recieverId] },
     }).populate("messages");
@@ -21,7 +23,7 @@ export async function GET(req, { params }) {
       );
     }
     return NextResponse.json(
-      { messages: conversation.messages, success: true },
+      { messages: conversation?.messages, success: true },
       { status: 200 }
     );
   } catch (error) {

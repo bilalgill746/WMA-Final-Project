@@ -5,7 +5,9 @@ connect();
 
 export async function GET(req, { params }) {
   try {
-    const postId = params.id;
+    // const postId = params.id;
+    const resolvedParams = await params;
+    const postId = resolvedParams.id;
 
     const comments = await Comment.find({ post: postId }).populate({
       path: "author",
